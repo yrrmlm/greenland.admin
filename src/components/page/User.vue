@@ -86,7 +86,6 @@
 </template>
 
 <script>
-    var gUrl = 'http://10.102.52.8:9999/api/v1/user/';
     export default {
         name: 'userTable',
         data() {
@@ -124,16 +123,14 @@
             },
             // 获取 easy-mock 的模拟数据
             getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = gUrl + 'list';
-                };
-                this.$axios.post(this.url, {
+                this.$axios.post("user/list", {
                     pageIndex: this.cur_page,
                     searchWord: this.select_word
                 }).then((res) => {
+                    if(res != undefined && res.data.header.rspCode == 0){
                     this.tableData = res.data.body.userList;
                     this.totalCount = res.data.body.totalPage;
+                    };
                 })
             },
             search() {
@@ -153,15 +150,17 @@
                 this.addVisible = true;
             },
             saveAdd(){
-                this.url = gUrl + 'add'
-                this.$axios.post(this.url,{
+                this.$axios.post('user/add',{
                      loginName:this.form.loginName,
                      loginPwd:this.form.loginPwd
                 }).then((res) => {
-                     if(res.data.body){
+                     if(res != undefined && res.data.body){
                         this.$message.success(`新增成功`);
                         this.addVisible = false;
                         this.getData();
+                     }
+                     else{
+                        this.$message.success(`新增失败`);
                      }
                 })
             },
@@ -176,13 +175,12 @@
             },
             // 保存编辑
             saveEdit() {
-                this.url = gUrl + 'edit'
-                this.$axios.post(this.url,{
+                this.$axios.post('user/edit',{
                      userId:this.selectId,
                      loginName:this.form.loginName,
                      loginPwd:this.form.loginPwd
                 }).then((res) => {
-                     if(res.data.body){
+                     if(res != undefined && res.data.body){
                         this.$message.success(`修改成功`);
                         this.editVisible = false;
                         this.getData();
@@ -195,11 +193,10 @@
              },
             // 确定删除
             deleteRow(){
-               this.url = gUrl + 'remove';
-               this.$axios.post(this.url, {
+               this.$axios.post('user/remove', {
                        userId:this.selectId
                     }).then((res)=> {
-                       if(res.data.body){
+                       if(res != undefined && res.data.body){
                        this.$message.success('删除成功');
                        this.delVisible = false;
                        this.getData();

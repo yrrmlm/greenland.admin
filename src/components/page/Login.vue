@@ -12,7 +12,7 @@
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
                 </div>
-                <p style="font-size:12px;line-height:30px;color:#999;">Tips : 用户名和密码随便填。</p>
+                <!--<p style="font-size:12px;line-height:30px;color:#999;">Tips : 用户名和密码随便填。</p>-->
             </el-form>
         </div>
     </div>
@@ -38,15 +38,19 @@
         },
         methods: {
             submitForm(formName) {
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        localStorage.setItem('ms_username',this.ruleForm.username);
-                        this.$router.push('/');
-                    } else {
-                        console.log('error submit!!');
-                        return false;
-                    }
-                });
+                this.$axios.post('http://10.102.52.8:9999/api/v1/auth/login', {
+                                    loginName: this.ruleForm.username,
+                                    password: this.ruleForm.password
+                                }).then((res) => {
+                                    if(res.data.header.rspCode == 0){
+                                        localStorage.setItem('ms_username',this.ruleForm.username);
+                                        localStorage.setItem('api_token',res.data.body.sessionCode);
+                                        this.$router.push('/');
+                                    }
+                                    else{
+                                        alert("登录失败，请检查账号密码");
+                                    }
+                                });
             }
         }
     }

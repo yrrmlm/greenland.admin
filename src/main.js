@@ -8,7 +8,37 @@ import 'element-ui/lib/theme-chalk/index.css';    // 默认主题
 import "babel-polyfill";
 
 Vue.use(ElementUI, { size: 'small' });
-Vue.prototype.$axios = axios;
+
+var instance = axios.create({
+    baseURL: 'http://10.102.52.8:9999/api/v1/',
+    timeout: 10000
+});
+Vue.prototype.$axios = instance;
+
+Vue.prototype.$axios.interceptors.request.use(config => {    // 这里的config包含每次请求的内容
+    // 判断localStorage中是否存在api_token
+    if (localStorage.getItem('api_token')) {
+        //  存在将api_token写入 request header
+        config.data.sessionCode = localStorage.getItem('api_token');
+        config.data.loginKey = localStorage.getItem('ms_username');
+    }
+    return config;
+}, err => {
+    return Promise.reject(err);
+});
+
+Vue.prototype.$axios.interceptors.response.use(response =>{
+    if (response.data.header.rspCode != 4) {
+        return response;
+    }
+    localStorage.removeItem('ms_username');
+    localStorage.removeItem('sessionCode');
+    router.push('login');
+
+    },error  => {
+      //return Promise.reject(response.data.header.rspDesc);
+    }
+);
 
 //使用钩子函数对路由进行权限跳转
 router.beforeEach((to, from, next) => {
